@@ -23,3 +23,14 @@ Fodler `samples` zawiera przykładowe pliki do testowania używające różnych 
 Niektóre są całkowicie niewrażliwe na takie ataki, a niektóre np. tylko częściowo i pozwalają poznać długość napisu.
 
 Dodatkowo w folderze `samples` znajdują się trzy pliki `keygen`,`hangover` i `virtual.1` które są bardziej złożonymi przykładami ataków czasowych. `hangover` jest przykładem z zadania z PINGctf, które może być rozwiązane tym sposobem. `virtual.1` pokazuje w jaki sposób informacje o czasie wykonania mogą być pomocne przy inżynierii wstecznej.
+
+#### Links
+https://crypto.stanford.edu/~dabo/papers/ssl-timing.pdf
+
+https://security.stackexchange.com/questions/83660/simple-string-comparisons-not-secure-against-timing-attacks
+
+https://dba.stackexchange.com/questions/285739/prevent-timing-attacks-in-postgres
+
+https://lirias.kuleuven.be/retrieve/389086
+
+https://github.com/agl/ctgrind
