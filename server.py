@@ -7,10 +7,18 @@ from flask import Flask, request, jsonify, current_app, g as app_ctx
 import psycopg2
 import gc
 import hashlib
+from sympy import use
+import sys
+
+
+import config
 
 diable_gc = False               #możemy wyłączyć garbage collector dla zmniejszenia "szumów"
 gc_after_every_request = False  #podobnie ale tym razem powodujemy że garbage collector jest bardziej przewidywalny
-
+rebuild_db = True               
+if rebuild_db:
+    import prepare_database
+    import get_users_in_db
 
 if diable_gc:
     gc.disable()
@@ -38,14 +46,16 @@ def logging_after(response):
     total_time = time.perf_counter_ns() - app_ctx.start_time
     time_in_ms = total_time
     # Log the time taken for the endpoint 
-    current_app.logger.warn('%s ns %s %s %s', time_in_ms, request.method, request.path, dict(request.args))
+    #current_app.logger.warn('%s ns %s %s %s', time_in_ms, request.method, request.path, dict(request.args))
     return response
 
 
 def comapre_string(a,b):
     if len(a) != len(b):
         return False
+    #time.sleep(0.001)
     for i in range(len(a)):
+        #time.sleep(0.001)
         if a[i] != b[i]:
             return False
     return True
@@ -57,22 +67,27 @@ def comapre_string_safe(a,b):
             same = False
     return same
 
+conn = psycopg2.connect(dbname=config.dbname, user=config.db_user, password=config.db_password, host=config.db_host, port=config.db_port)
 
 @app.route("/auth", methods=['POST'])
 def auth():
-    conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="localhost", port="5432")
-    curr = conn.cursor()
+    
     username = request.form['username']
     password = request.form['password']
-    curr.execute(f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'")
-    if curr.fetchone():
-        return Response("Success", status=200)
+    #curr.execute(f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'")
+    curr = conn.cursor()
+    curr.execute(f"SELECT * FROM users WHERE username = '{username}'")
+
+    user = curr.fetchone()
+    curr.close()
+    if user is None:
+        #time.sleep(0.005)
+        return "Wrong username or password",400
+
+    password_db = user[2]
+    
+    if comapre_string(password_db,password):
+        return "Logged in",200
     else:
-        return Response("Wrong username od password", status=401)
-    if comapre_string(username, "admin") and comapre_string(password, "ping2024"):
-        return Response("Success", status=200)
-    else:
-        return Response("Fail", status=401)
-
-
-
+        return "Wrong username or password",401
+    
